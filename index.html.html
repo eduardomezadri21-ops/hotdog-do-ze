@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hot Dog do Zé — Peça aqui</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF1DE; --bg2:#F4E4C1; --ink:#2B1E14; --sub:#6B5842;
+    --mustard:#E3A23C; --red:#C13B24; --line:#E6D3AA; --card:#FFFCF5;
+    --focus:#1B6B5A;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1E1710; --bg2:#2A2015; --ink:#F4E9D6; --sub:#C7B393;
+      --card:#28200F; --line:#4A3B24;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1E1710; --bg2:#2A2015; --ink:#F4E9D6; --sub:#C7B393;
+    --card:#28200F; --line:#4A3B24;
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    min-height:100%; padding-bottom:96px;
+  }
+  h1,h2,.brand{font-family:"Fraunces",Georgia,serif;}
+  header{
+    padding:28px 20px 22px; background:linear-gradient(180deg,var(--bg2),var(--bg));
+    border-bottom:1px solid var(--line);
+  }
+  .brand{font-size:1.7rem; font-weight:700; margin:0 0 4px;}
+  .tag{color:var(--sub); font-size:.95rem; margin:0;}
+  main{max-width:560px; margin:0 auto; padding:18px 16px 0;}
+  .section-title{font-size:1.05rem; font-weight:700; margin:22px 0 10px; font-family:"Fraunces",serif;}
+  .item{
+    display:flex; align-items:center; gap:12px; background:var(--card);
+    border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:10px;
+  }
+  .item-emoji{font-size:1.6rem; width:38px; text-align:center;}
+  .item-info{flex:1; min-width:0;}
+  .item-name{font-weight:600; font-size:.98rem;}
+  .item-price{color:var(--sub); font-size:.88rem;}
+  .stepper{display:flex; align-items:center; gap:8px;}
+  .stepper button{
+    width:30px; height:30px; border-radius:50%; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:1.1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .stepper button:active{background:var(--mustard);}
+  .stepper span{min-width:16px; text-align:center; font-weight:600;}
+  fieldset{border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin:0 0 12px; background:var(--card);}
+  legend{padding:0 6px; font-weight:600; font-size:.9rem; color:var(--sub);}
+  .opt-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .opt{
+    border:1px solid var(--line); border-radius:999px; padding:8px 14px; font-size:.9rem;
+    cursor:pointer; background:var(--bg); user-select:none;
+  }
+  .opt.selected{background:var(--red); border-color:var(--red); color:#FFF3EA; font-weight:600;}
+  input[type=text]{
+    width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+    background:var(--bg); color:var(--ink); font-size:.95rem; margin-top:8px;
+  }
+  input[type=text]:focus{outline:2px solid var(--focus); outline-offset:1px;}
+  .hint{color:var(--sub); font-size:.82rem; margin-top:6px;}
+  .cartbar{
+    position:fixed; left:0; right:0; bottom:0; background:var(--card);
+    border-top:1px solid var(--line); padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+  }
+  .cartbar-inner{max-width:560px; margin:0 auto; display:flex; align-items:center; gap:12px;}
+  .total{flex:1;}
+  .total .label{font-size:.78rem; color:var(--sub);}
+  .total .amount{font-size:1.25rem; font-weight:700; font-family:"Fraunces",serif;}
+  .send-btn{
+    background:var(--red); color:#FFF3EA; border:none; border-radius:12px;
+    padding:14px 20px; font-size:.98rem; font-weight:700; cursor:pointer;
+  }
+  .send-btn:disabled{opacity:.45; cursor:not-allowed;}
+  .send-btn:active:not(:disabled){transform:scale(.98);}
+  .empty-note{color:var(--sub); font-size:.85rem; text-align:center; padding:8px 0 2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="brand">🌭 Hot Dog do Zé</p>
+  <p class="tag">Monte seu pedido e finalize direto no WhatsApp</p>
+</header>
+
+<main>
+  <p class="section-title">Cardápio</p>
+  <div id="menu"></div>
+
+  <p class="section-title">Como você quer receber?</p>
+  <fieldset>
+    <legend>Entrega ou retirada</legend>
+    <div class="opt-row" id="tipoRow"></div>
+    <div id="enderecoWrap" style="display:none;">
+      <input type="text" id="endereco" placeholder="Rua, número, bairro e ponto de referência">
+    </div>
+  </fieldset>
+
+  <p class="section-title">Pagamento</p>
+  <fieldset>
+    <legend>Forma de pagamento</legend>
+    <div class="opt-row" id="pagRow"></div>
+    <div id="trocoWrap" style="display:none;">
+      <input type="text" id="troco" placeholder="Troco para quanto? (ex: R$ 50)">
+    </div>
+  </fieldset>
+</main>
+
+<div class="cartbar">
+  <div class="cartbar-inner">
+    <div class="total">
+      <div class="label">Total</div>
+      <div class="amount" id="totalAmount">R$ 0,00</div>
+    </div>
+    <button class="send-btn" id="sendBtn" disabled>Enviar pedido</button>
+  </div>
+  <p class="empty-note" id="emptyNote">Adicione itens ao pedido para continuar</p>
+</div>
+
+<script>
+// ---------- CONFIGURAÇÃO DA LOJA (troque aqui para reaproveitar em outro negócio) ----------
+const CONFIG = {
+  nomeLoja: "Hot Dog do Zé",
+  whatsapp: "5547988349496", // número com código do país, sem espaços ou símbolos
+  taxaEntrega: 5.00,
+  itens: [
+    { id: "simples",  nome: "Hot Dog Simples",             preco: 12.00, emoji: "🌭" },
+    { id: "completo", nome: "Hot Dog Completo",            preco: 16.00, emoji: "🌭" },
+    { id: "duplo",    nome: "Hot Dog Duplo (2 salsichas)", preco: 20.00, emoji: "🌭" },
+    { id: "frango",   nome: "Hot Dog Frango com Catupiry", preco: 18.00, emoji: "🌭" },
+    { id: "refri",    nome: "Refrigerante Lata",           preco: 6.00,  emoji: "🥤" },
+    { id: "suco",     nome: "Suco Natural",                preco: 8.00,  emoji: "🧃" },
+  ],
+  tipos: ["Entrega", "Retirada na loja"],
+  pagamentos: ["Pix", "Cartão", "Dinheiro"],
+};
+// -------------------------------------------------------------------------------------------
+
+const cart = {};
+let tipoEscolhido = null;
+let pagEscolhido = null;
+
+function money(v){ return "R$ " + v.toFixed(2).replace(".", ","); }
+
+function renderMenu(){
+  const el = document.getElementById("menu");
+  el.innerHTML = CONFIG.itens.map(it => `
+    <div class="item">
+      <div class="item-emoji">${it.emoji}</div>
+      <div class="item-info">
+        <div class="item-name">${it.nome}</div>
+        <div class="item-price">${money(it.preco)}</div>
+      </div>
+      <div class="stepper">
+        <button aria-label="Diminuir" onclick="changeQty('${it.id}', -1)">−</button>
+        <span id="qty-${it.id}">0</span>
+        <button aria-label="Aumentar" onclick="changeQty('${it.id}', 1)">+</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function changeQty(id, delta){
+  const atual = cart[id] || 0;
+  const novo = Math.max(0, Math.min(20, atual + delta));
+  cart[id] = novo;
+  document.getElementById("qty-" + id).textContent = novo;
+  updateTotals();
+}
+
+function renderOptions(){
+  const tipoRow = document.getElementById("tipoRow");
+  tipoRow.innerHTML = CONFIG.tipos.map(t =>
+    `<div class="opt" data-val="${t}" onclick="selectTipo('${t}')">${t}</div>`
+  ).join("");
+
+  const pagRow = document.getElementById("pagRow");
+  pagRow.innerHTML = CONFIG.pagamentos.map(p =>
+    `<div class="opt" data-val="${p}" onclick="selectPag('${p}')">${p}</div>`
+  ).join("");
+}
+
+function selectTipo(t){
+  tipoEscolhido = t;
+  document.querySelectorAll("#tipoRow .opt").forEach(o => o.classList.toggle("selected", o.dataset.val === t));
+  document.getElementById("enderecoWrap").style.display = (t === "Entrega") ? "block" : "none";
+  updateTotals();
+}
+
+function selectPag(p){
+  pagEscolhido = p;
+  document.querySelectorAll("#pagRow .opt").forEach(o => o.classList.toggle("selected", o.dataset.val === p));
+  document.getElementById("trocoWrap").style.display = (p === "Dinheiro") ? "block" : "none";
+  updateTotals();
+}
+
+function cartItems(){
+  return CONFIG.itens
+    .map(it => ({ ...it, qtd: cart[it.id] || 0 }))
+    .filter(it => it.qtd > 0);
+}
+
+function calcularTotal(){
+  let total = cartItems().reduce((s, it) => s + it.preco * it.qtd, 0);
+  if (tipoEscolhido === "Entrega") total += CONFIG.taxaEntrega;
+  return total;
+}
+
+function updateTotals(){
+  const total = calcularTotal();
+  document.getElementById("totalAmount").textContent = money(total);
+
+  const itens = cartItems();
+  const endereco = document.getElementById("endereco").value.trim();
+  const pronto =
+    itens.length > 0 &&
+    tipoEscolhido !== null &&
+    pagEscolhido !== null &&
+    (tipoEscolhido !== "Entrega" || endereco.length > 5);
+
+  document.getElementById("sendBtn").disabled = !pronto;
+  document.getElementById("emptyNote").style.display = pronto ? "none" : "block";
+}
+
+document.getElementById("endereco").addEventListener("input", updateTotals);
+document.getElementById("troco").addEventListener("input", updateTotals);
+
+function montarMensagem(){
+  const itens = cartItems();
+  let linhas = [`Olá! Quero fazer um pedido no *${CONFIG.nomeLoja}*:`, ""];
+  itens.forEach(it => linhas.push(`${it.qtd}x ${it.nome} — ${money(it.preco * it.qtd)}`));
+  linhas.push("");
+  linhas.push(`Tipo: ${tipoEscolhido}`);
+  if (tipoEscolhido === "Entrega"){
+    linhas.push(`Endereço: ${document.getElementById("endereco").value.trim()}`);
+    linhas.push(`Taxa de entrega: ${money(CONFIG.taxaEntrega)}`);
+  }
+  linhas.push(`Pagamento: ${pagEscolhido}`);
+  const troco = document.getElementById("troco").value.trim();
+  if (pagEscolhido === "Dinheiro" && troco) linhas.push(`Troco para: ${troco}`);
+  linhas.push("");
+  linhas.push(`*Total: ${money(calcularTotal())}*`);
+  return linhas.join("\n");
+}
+
+document.getElementById("sendBtn").addEventListener("click", () => {
+  const msg = encodeURIComponent(montarMensagem());
+  window.open(`https://wa.me/${CONFIG.whatsapp}?text=${msg}`, "_blank");
+});
+
+renderMenu();
+renderOptions();
+updateTotals();
+</script>
+</body>
+</html>
